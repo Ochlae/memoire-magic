@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Claudius Memory Magique</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:linear-gradient(#0a1f33,#111);
+color:white;
+text-align:center;
+padding:15px;
+}
+
+h1{
+color:#ffbe55;
+margin-bottom:5px;
+}
+
+#info{
+margin-bottom:15px;
+font-size:18px;
+}
+
+#game{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:12px;
+max-width:700px;
+margin:auto;
+}
+
+.card{
+height:120px;
+cursor:pointer;
+position:relative;
+transform-style:preserve-3d;
+transition:transform .5s;
+}
+
+.card.flip{
+transform:rotateY(180deg);
+}
+
+.face{
+position:absolute;
+width:100%;
+height:100%;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:15px;
+backface-visibility:hidden;
+font-size:45px;
+}
+
+.front{
+background:#ff8a00;
+}
+
+.back{
+background:#1f3454;
+transform:rotateY(180deg);
+}
+
+.matched{
+opacity:.45;
+pointer-events:none;
+}
+
+#message{
+margin-top:20px;
+min-height:70px;
+padding:10px;
+font-size:20px;
+color:#ffe7a0;
+}
+
+button{
+margin-top:15px;
+padding:10px 20px;
+border:none;
+border-radius:20px;
+background:#ff8a00;
+color:white;
+font-size:18px;
+cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Claudius Memory Magique</h1>
+
+<div id="info">
+Coups : <span id="moves">0</span>
+</div>
+
+<div id="game"></div>
+
+<div id="message">
+Retourne les cartes…
+</div>
+
+<button onclick="restart()">Recommencer</button>
+
+<script>
+
+const symbols=[
+"☀️","🌙",
+"⛵","🌊",
+"🏠","⭐",
+"☀️","🌙",
+"⛵","🌊",
+"🏠","⭐"
+];
+
+let cards=[...symbols]
+.sort(()=>Math.random()-0.5);
+
+let first=null;
+let second=null;
+let lock=false;
+let moves=0;
+let matches=0;
+
+const game=document.getElementById("game");
+
+function createBoard(){
+
+game.innerHTML="";
+
+cards.forEach(symbol=>{
+
+const card=document.createElement("div");
+card.className="card";
+
+card.innerHTML=`
+<div class="face front">?</div>
+<div class="face back">${symbol}</div>
+`;
+
+card.onclick=()=>flip(card,symbol);
+
+game.appendChild(card);
+
+});
+
+}
+
+function flip(card,symbol){
+
+if(lock) return;
+if(card.classList.contains("flip")) return;
+
+card.classList.add("flip");
+
+if(!first){
+
+first={card,symbol};
+
+return;
+
+}
+
+second={card,symbol};
+
+moves++;
+
+movesDisplay();
+
+if(first.symbol===second.symbol){
+
+first.card.classList.add("matched");
+second.card.classList.add("matched");
+
+poem(symbol);
+
+matches++;
+
+first=null;
+second=null;
+
+if(matches===6){
+
+document.getElementById("message").innerHTML=
+"✨ Bravo Claude... les souvenirs se réveillent.";
+
+}
+
+}else{
+
+lock=true;
+
+setTimeout(()=>{
+
+first.card.classList.remove("flip");
+second.card.classList.remove("flip");
+
+first=null;
+second=null;
+lock=false;
+
+},1000);
+
+}
+
+}
+
+function poem(s){
+
+const txt={
+
+"☀️":"Le soleil retrouve son chemin.",
+"🌙":"La lune veille sur les villages.",
+"⛵":"Un bateau glisse vers les rêves.",
+"🌊":"La mer murmure doucement.",
+"🏠":"Une maison rallume sa mémoire.",
+"⭐":"Une étoile traverse le silence."
+
+};
+
+document.getElementById("message")
+.innerHTML=txt[s];
+
+}
+
+function movesDisplay(){
+
+document.getElementById("moves")
+.textContent=moves;
+
+}
+
+function restart(){
+
+cards=[...symbols]
+.sort(()=>Math.random()-0.5);
+
+first=null;
+second=null;
+moves=0;
+matches=0;
+
+movesDisplay();
+
+document.getElementById("message")
+.innerHTML="Retourne les cartes…";
+
+createBoard();
+
+}
+
+createBoard();
+
+</script>
+
+</body>
+</html>
